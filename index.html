@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐷 Schweinerei</title>
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0d0b; --surface: #1a1714; --surface2: #252119;
+    --border: #3a3228; --accent: #e85d2f; --accent2: #f0a500;
+    --text: #f0ebe3; --text-muted: #857a6e; --green: #4caf72;
+    --red: #e84545; --blue: #5b9cf6; --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+  body::before { content:''; position:fixed; top:-20%; left:-10%; width:60vw; height:60vw; background:radial-gradient(circle,rgba(232,93,47,.08) 0%,transparent 70%); pointer-events:none; z-index:0; }
+  body::after  { content:''; position:fixed; bottom:-20%; right:-10%; width:50vw; height:50vw; background:radial-gradient(circle,rgba(240,165,0,.06) 0%,transparent 70%); pointer-events:none; z-index:0; }
+  .app { position:relative; z-index:1; max-width:980px; margin:0 auto; padding:24px 16px 60px; }
+
+  /* TABS */
+  .tab-bar { display:flex; gap:4px; background:var(--surface); border:1px solid var(--border); border-radius:50px; padding:4px; margin-bottom:28px; width:fit-content; }
+  .tab-btn { padding:8px 20px; border-radius:50px; border:none; background:transparent; color:var(--text-muted); font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; cursor:pointer; transition:all .2s ease; white-space:nowrap; }
+  .tab-btn.active { background:linear-gradient(135deg,var(--accent),#c74726); color:#fff; box-shadow:0 4px 16px rgba(232,93,47,.4); }
+  .tab-btn:not(.active):hover { color:var(--text); background:var(--surface2); }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; animation:fadeUp .25s ease; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  /* HEADER */
+  header { display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:12px; }
+  .logo { display:flex; align-items:baseline; gap:10px; }
+  .logo h1 { font-family:'Abril Fatface',serif; font-size:clamp(2rem,6vw,3rem); background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; letter-spacing:-1px; line-height:1; }
+  .logo .emoji { font-size:clamp(1.8rem,5vw,2.6rem); line-height:1; }
+  .header-actions { display:flex; gap:8px; flex-wrap:wrap; }
+
+  /* BUTTONS */
+  .btn { display:inline-flex; align-items:center; gap:6px; padding:9px 16px; border-radius:50px; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; transition:all .18s ease; white-space:nowrap; }
+  .btn:active { transform:scale(.96); }
+  .btn-ghost { background:var(--surface2); color:var(--text-muted); border:1px solid var(--border); }
+  .btn-ghost:hover { background:var(--border); color:var(--text); }
+  .btn-accent { background:linear-gradient(135deg,var(--accent),#c74726); color:#fff; box-shadow:0 4px 20px rgba(232,93,47,.35); }
+  .btn-accent:hover { box-shadow:0 6px 28px rgba(232,93,47,.5); transform:translateY(-1px); }
+  .btn-danger { background:var(--surface2); color:var(--red); border:1px solid rgba(232,69,69,.3); }
+  .btn-danger:hover { background:rgba(232,69,69,.15); }
+  .btn-lg { padding:14px 28px; font-size:15px; }
+  .btn-sm { padding:6px 12px; font-size:12px; }
+
+  /* STATUS BAR */
+  .status-bar { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 20px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  .status-current { display:flex; align-items:center; gap:12px; }
+  .current-pig { width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; box-shadow:0 0 0 3px rgba(232,93,47,.2); }
+  .current-info .label { font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); }
+  .current-info .name { font-size:18px; font-weight:600; color:var(--text); }
+  .round-badge { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .round-pill { background:var(--surface2); border:1px solid var(--border); border-radius:50px; padding:6px 14px; font-size:13px; color:var(--text-muted); }
+  .round-pill span { color:var(--accent2); font-weight:600; }
+
+  .section-title { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:1.5px; color:var(--text-muted); margin-bottom:12px; }
+
+  /* COMBO GRID */
+  .combo-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:8px; margin-bottom:20px; }
+  .combo-btn { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:12px 14px; cursor:pointer; transition:all .18s ease; text-align:left; display:flex; flex-direction:column; gap:4px; position:relative; overflow:hidden; }
+  .combo-btn::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,transparent,rgba(255,255,255,.03)); opacity:0; transition:opacity .18s; }
+  .combo-btn:hover { border-color:var(--accent); transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.4); }
+  .combo-btn:hover::before { opacity:1; }
+  .combo-btn:active { transform:scale(.97); }
+  .combo-btn .combo-name { font-size:13px; font-weight:500; color:var(--text); line-height:1.3; }
+  .combo-btn .combo-pts { font-family:'Abril Fatface',serif; font-size:20px; line-height:1; }
+  .pts-positive{color:var(--green)} .pts-zero{color:var(--text-muted)} .pts-negative{color:var(--red)} .pts-special{color:var(--accent)}
+  .combo-btn .combo-icon { font-size:18px; margin-bottom:2px; }
+  .combo-btn.sauerei:hover{border-color:var(--red)} .combo-btn.special:hover{border-color:var(--accent)}
+  .action-row { display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap; }
+
+  /* SCOREBOARD */
+  .scoreboard { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; margin-bottom:20px; }
+  .scoreboard-header { display:grid; grid-template-columns:1fr 1fr 90px 80px 50px; padding:10px 16px; background:var(--surface2); border-bottom:1px solid var(--border); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--text-muted); gap:8px; align-items:center; }
+  .player-row { display:grid; grid-template-columns:1fr 1fr 90px 80px 50px; padding:12px 16px; border-bottom:1px solid var(--border); gap:8px; align-items:center; transition:background .15s; animation:fadeInRow .3s ease both; }
+  @keyframes fadeInRow { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
+  .player-row:last-child { border-bottom:none; }
+  .player-row:hover { background:var(--surface2); }
+  .player-row.active { background:rgba(232,93,47,.08); border-left:3px solid var(--accent); }
+  .player-row.done { opacity:.55; }
+
+  /* NAME + AUTOCOMPLETE */
+  .name-wrap { position:relative; }
+  .player-name-input { background:transparent; border:none; color:var(--text); font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; width:100%; outline:none; border-bottom:1px dashed transparent; transition:border-color .2s; padding:2px 0; }
+  .player-name-input:focus { border-bottom-color:var(--accent); }
+  .autocomplete-list { position:absolute; top:calc(100% + 4px); left:0; background:var(--surface2); border:1px solid var(--border); border-radius:10px; overflow:hidden; z-index:200; min-width:160px; max-width:220px; box-shadow:0 8px 24px rgba(0,0,0,.5); display:none; }
+  .autocomplete-list.open { display:block; animation:fadeUp .15s ease; }
+  .autocomplete-item { padding:9px 14px; font-size:13px; cursor:pointer; color:var(--text); transition:background .12s; display:flex; align-items:center; gap:8px; }
+  .autocomplete-item:hover { background:var(--border); }
+  .autocomplete-item .ac-cnt { margin-left:auto; font-size:11px; color:var(--accent2); }
+
+  .score-display { font-family:'Abril Fatface',serif; font-size:22px; color:var(--text); }
+  .score-display.negative { color:var(--red); }
+  .rounds-display { font-size:13px; color:var(--text-muted); }
+  .rounds-bar { height:4px; background:var(--border); border-radius:2px; margin-top:4px; overflow:hidden; }
+  .rounds-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2)); border-radius:2px; transition:width .4s ease; }
+  .remove-btn { background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:16px; padding:4px; border-radius:6px; transition:all .15s; display:flex; align-items:center; justify-content:center; line-height:1; }
+  .remove-btn:hover { background:rgba(232,69,69,.15); color:var(--red); }
+  .add-player-row { padding:12px 16px; border-top:1px dashed var(--border); }
+
+  /* HISTORY */
+  .history-empty { text-align:center; padding:60px 20px; color:var(--text-muted); font-size:15px; }
+  .history-empty .h-icon { font-size:48px; display:block; margin-bottom:12px; opacity:.4; }
+  .match-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); margin-bottom:12px; overflow:hidden; transition:border-color .2s; animation:fadeUp .3s ease both; }
+  .match-card:hover { border-color:rgba(232,93,47,.4); }
+  .match-header { display:flex; align-items:center; justify-content:space-between; padding:14px 18px; cursor:pointer; gap:12px; flex-wrap:wrap; background:var(--surface2); }
+  .match-meta { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .match-num { font-family:'Abril Fatface',serif; font-size:22px; background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; line-height:1; }
+  .match-date { font-size:12px; color:var(--text-muted); }
+  .match-winner-badge { display:flex; align-items:center; gap:6px; background:rgba(240,165,0,.12); border:1px solid rgba(240,165,0,.25); border-radius:50px; padding:4px 12px; font-size:12px; font-weight:600; color:var(--accent2); }
+  .match-players-preview { font-size:12px; color:var(--text-muted); margin-top:4px; }
+  .match-toggle { color:var(--text-muted); font-size:18px; transition:transform .2s; line-height:1; flex-shrink:0; }
+  .match-card.open .match-toggle { transform:rotate(180deg); }
+  .match-body { display:none; padding:14px 18px; border-top:1px solid var(--border); }
+  .match-card.open .match-body { display:block; animation:fadeUp .2s ease; }
+  .match-ranking { display:flex; flex-direction:column; gap:6px; }
+  .match-rank-row { display:flex; align-items:center; gap:12px; padding:8px 12px; border-radius:10px; background:var(--surface2); }
+  .match-rank-pos { font-size:16px; width:28px; text-align:center; }
+  .match-rank-name { flex:1; font-size:14px; font-weight:500; }
+  .match-rank-pts { font-family:'Abril Fatface',serif; font-size:20px; color:var(--accent2); }
+  .match-rank-rounds { font-size:12px; color:var(--text-muted); }
+  .delete-match-btn { background:none; border:none; cursor:pointer; color:var(--text-muted); font-size:13px; padding:6px 10px; border-radius:6px; transition:all .15s; margin-top:12px; }
+  .delete-match-btn:hover { background:rgba(232,69,69,.12); color:var(--red); }
+  .history-controls { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+
+  /* KNOWN PLAYERS */
+  .known-chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .known-chip { background:var(--surface2); border:1px solid var(--border); border-radius:50px; padding:7px 14px; font-size:13px; color:var(--text-muted); display:flex; align-items:center; gap:6px; cursor:pointer; transition:all .15s; }
+  .known-chip:hover { border-color:var(--accent); color:var(--text); }
+  .known-chip .chip-cnt { color:var(--accent2); font-size:11px; font-weight:600; }
+  .known-chip .chip-x { font-size:11px; color:var(--text-muted); line-height:1; padding:2px 0 2px 4px; }
+  .known-chip .chip-x:hover { color:var(--red); }
+
+  /* TOAST */
+  #toast { position:fixed; bottom:32px; left:50%; transform:translateX(-50%) translateY(80px); background:var(--surface); border:1px solid var(--border); color:var(--text); padding:12px 22px; border-radius:50px; font-size:14px; font-weight:500; z-index:9999; opacity:0; transition:all .3s cubic-bezier(.34,1.56,.64,1); pointer-events:none; white-space:nowrap; box-shadow:0 8px 32px rgba(0,0,0,.5); }
+  #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* WINNER */
+  #winner-overlay { position:fixed; inset:0; background:rgba(10,8,6,.92); z-index:1000; display:none; align-items:center; justify-content:center; backdrop-filter:blur(8px); }
+  #winner-overlay.show { display:flex; }
+  .winner-card { background:var(--surface); border:1px solid var(--border); border-radius:24px; padding:48px 40px; text-align:center; max-width:420px; width:90%; animation:popIn .5s cubic-bezier(.34,1.56,.64,1) both; position:relative; overflow:hidden; }
+  .winner-card::before { content:''; position:absolute; top:0;left:0;right:0; height:3px; background:linear-gradient(90deg,var(--accent),var(--accent2),var(--green)); }
+  @keyframes popIn { from{opacity:0;transform:scale(.7)} to{opacity:1;transform:scale(1)} }
+  .winner-emoji { font-size:72px; display:block; margin-bottom:16px; animation:bounce .6s ease .3s both; }
+  @keyframes bounce { 0%{transform:translateY(-20px);opacity:0} 60%{transform:translateY(6px)} 100%{transform:translateY(0);opacity:1} }
+  .winner-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:2px; color:var(--accent2); margin-bottom:8px; }
+  .winner-name { font-family:'Abril Fatface',serif; font-size:2.4rem; background:linear-gradient(135deg,var(--accent),var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:12px; line-height:1.1; }
+  .winner-score { font-family:'Abril Fatface',serif; font-size:1.2rem; color:var(--text-muted); margin-bottom:28px; }
+  .winner-score span { color:var(--green); font-size:1.6rem; }
+  .winner-ranking { text-align:left; background:var(--surface2); border-radius:12px; padding:14px 16px; margin-bottom:24px; }
+  .rank-item { display:flex; align-items:center; justify-content:space-between; padding:6px 0; font-size:14px; border-bottom:1px solid var(--border); }
+  .rank-item:last-child{border-bottom:none}
+  .rank-item .rank-pos{color:var(--text-muted);font-weight:600;width:24px}
+  .rank-item .rank-name{flex:1}
+  .rank-item .rank-pts{font-family:'Abril Fatface',serif;font-size:18px;color:var(--accent2)}
+
+  /* CONFETTI */
+  .confetti-piece { position:fixed; width:10px; height:10px; top:-10px; animation:confettiFall linear both; z-index:1001; border-radius:2px; }
+  @keyframes confettiFall { to{transform:translateY(100vh) rotate(720deg);opacity:0} }
+
+  .divider { height:1px; background:var(--border); margin:24px 0; opacity:.5; }
+  .flash { animation:flashAnim .4s ease both; }
+  @keyframes flashAnim { 0%{background:var(--surface)} 30%{background:rgba(232,93,47,.2);transform:scale(.97)} 100%{background:var(--surface);transform:scale(1)} }
+
+  @media(max-width:600px) {
+    .scoreboard-header{grid-template-columns:1fr 70px 60px 50px}
+    .scoreboard-header .col-rounds-bar{display:none}
+    .player-row{grid-template-columns:1fr 70px 60px 50px}
+    .player-row .rounds-bar{display:none}
+    .combo-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+    .tab-btn{padding:8px 12px;font-size:12px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="logo">
+      <span class="emoji">🐷</span>
+      <h1>Schweinerei</h1>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">📄 CSV</button>
+      <button class="btn btn-danger btn-sm" onclick="resetGame()">↺ Neu starten</button>
+    </div>
+  </header>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('game',this)">🎮 Spiel</button>
+    <button class="tab-btn" onclick="switchTab('history',this)">📋 Verlauf</button>
+    <button class="tab-btn" onclick="switchTab('players',this)">👥 Spieler</button>
+  </div>
+
+  <!-- TAB: GAME -->
+  <div class="tab-panel active" id="tab-game">
+    <div class="status-bar">
+      <div class="status-current">
+        <div class="current-pig">🐷</div>
+        <div class="current-info">
+          <div class="label">Aktueller Spieler</div>
+          <div class="name" id="current-name">–</div>
+        </div>
+      </div>
+      <div class="round-badge">
+        <div class="round-pill">Runde <span id="current-round">–</span> / 10</div>
+        <div class="round-pill">Spieler <span id="current-player-idx">–</span></div>
+      </div>
+    </div>
+
+    <div class="section-title">Kombination wählen</div>
+    <div class="combo-grid" id="combo-grid"></div>
+
+    <div class="action-row">
+      <button class="btn btn-accent btn-lg" onclick="nextPlayer()">➡️ Nächster Spieler</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="section-title">Punktestand</div>
+    <div class="scoreboard">
+      <div class="scoreboard-header">
+        <div>Spieler</div><div>Punkte</div><div>Runden</div>
+        <div class="col-rounds-bar">Fortschritt</div><div></div>
+      </div>
+      <div id="player-list"></div>
+      <div class="add-player-row">
+        <button class="btn btn-ghost btn-sm" onclick="addPlayer()" id="add-player-btn">+ Spieler hinzufügen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: HISTORY -->
+  <div class="tab-panel" id="tab-history">
+    <div class="history-controls">
+      <div class="section-title" style="margin-bottom:0">Match-Verlauf</div>
+      <button class="btn btn-danger btn-sm" onclick="clearHistory()">🗑 Alles löschen</button>
+    </div>
+    <div id="history-list"></div>
+  </div>
+
+  <!-- TAB: PLAYERS -->
+  <div class="tab-panel" id="tab-players">
+    <div class="section-title">Bekannte Spieler</div>
+    <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px;line-height:1.6">
+      Namen werden automatisch gespeichert wenn ein Spiel endet.<br>
+      Klicke auf einen Namen um ihn ins aktuelle Spiel zu laden.
+    </p>
+    <div class="known-chips" id="known-chips"></div>
+  </div>
+
+</div>
+
+<!-- WINNER OVERLAY -->
+<div id="winner-overlay">
+  <div class="winner-card">
+    <span class="winner-emoji">🏆</span>
+    <div class="winner-label">Gewinner</div>
+    <div class="winner-name" id="winner-name"></div>
+    <div class="winner-score">Punkte: <span id="winner-pts"></span></div>
+    <div class="winner-ranking" id="winner-ranking"></div>
+    <button class="btn btn-accent btn-lg" onclick="resetGame()" style="width:100%">🔄 Neues Spiel</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── DATA ─────────────────────────────────────
+const COMBOS = [
+  {name:'Sauerei',            desc:'berühren sich', pts:-10,  icon:'💢', cls:'sauerei'},
+  {name:'Nullwurf',           desc:'kein Treffer',  pts:0,    icon:'🌬️', cls:'nullwurf'},
+  {name:'Seite + Seite',      desc:'',              pts:1,    icon:'🟰', cls:''},
+  {name:'Liegender Rücken',   desc:'',              pts:5,    icon:'🐷', cls:''},
+  {name:'Stehender Rüssel',   desc:'',              pts:10,   icon:'🐽', cls:''},
+  {name:'Schnauze + Ohr',     desc:'',              pts:15,   icon:'👂', cls:''},
+  {name:'Doppel Rücken',      desc:'',              pts:20,   icon:'🎯', cls:''},
+  {name:'Doppel Rüssel',      desc:'',              pts:25,   icon:'🌟', cls:''},
+  {name:'Schwein auf Schwein',desc:'Punkte → 0',    pts:null, icon:'💀', cls:'special'},
+];
+const MAX_ROUNDS = 10, MAX_PLAYERS = 8;
+
+let state = {players:[], currentPlayerIdx:0, gameOver:false};
+let matchHistory = [];
+let knownPlayers = {};
+
+// ── STORAGE ───────────────────────────────────
+function loadAll() {
+  try { const s=JSON.parse(localStorage.getItem('sw_state')); if(s?.players?.length) state=s; } catch(e){}
+  if (!state.players.length) state.players = defaultPlayers();
+  try { matchHistory = JSON.parse(localStorage.getItem('sw_history')) || []; } catch(e){}
+  try { knownPlayers = JSON.parse(localStorage.getItem('sw_known'))   || {}; } catch(e){}
+}
+function saveState()   { localStorage.setItem('sw_state',   JSON.stringify(state)); }
+function saveHistory() { localStorage.setItem('sw_history', JSON.stringify(matchHistory)); }
+function saveKnown()   { localStorage.setItem('sw_known',   JSON.stringify(knownPlayers)); }
+
+function defaultPlayers() {
+  return [{name:'Spieler 1',score:0,rounds:0},{name:'Spieler 2',score:0,rounds:0},
+          {name:'Spieler 3',score:0,rounds:0},{name:'Spieler 4',score:0,rounds:0}];
+}
+
+// ── TABS ──────────────────────────────────────
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+  if (id==='history') renderHistory();
+  if (id==='players') renderKnownPlayers();
+}
+
+// ── RENDER ────────────────────────────────────
+function renderCombos() {
+  document.getElementById('combo-grid').innerHTML = COMBOS.map((c,i)=>{
+    const pc = c.pts===null?'pts-special':c.pts<0?'pts-negative':c.pts===0?'pts-zero':'pts-positive';
+    const pl = c.pts===null?'∅ 0':(c.pts>0?'+'+c.pts:c.pts);
+    return `<button class="combo-btn ${c.cls}" onclick="applyCombo(${i},this)">
+      <span class="combo-icon">${c.icon}</span>
+      <span class="combo-name">${c.name}</span>
+      ${c.desc?<span style="font-size:11px;color:var(--text-muted)">${c.desc}</span>:''}
+      <span class="combo-pts ${pc}">${pl}</span>
+    </button>`;
+  }).join('');
+}
+
+function renderPlayers() {
+  document.getElementById('player-list').innerHTML = state.players.map((p,i)=>{
+    const active = i===state.currentPlayerIdx&&!state.gameOver;
+    const done   = p.rounds>=MAX_ROUNDS;
+    const pct    = (p.rounds/MAX_ROUNDS*100).toFixed(0);
+    return `<div class="player-row ${active?'active':''} ${done?'done':''}" id="row-${i}">
+      <div class="name-wrap">
+        <input class="player-name-input" id="ni-${i}"
+          value="${escHtml(p.name)}"
+          oninput="onNameInput(${i},this)"
+          onblur="onNameBlur(${i})"
+          onfocus="showAC(${i})"
+          onkeydown="onNameKey(event,${i})"
+          placeholder="Name…" maxlength="20" autocomplete="off">
+        <div class="autocomplete-list" id="ac-${i}"></div>
+      </div>
+      <div class="score-display ${p.score<0?'negative':''}">${p.score}</div>
+      <div class="rounds-display">${p.rounds} / ${MAX_ROUNDS}</div>
+      <div class="rounds-bar"><div class="rounds-fill" style="width:${pct}%"></div></div>
+      <button class="remove-btn" onclick="removePlayer(${i})">✕</button>
+    </div>`;
+  }).join('');
+  const ab = document.getElementById('add-player-btn');
+  if(ab) ab.style.display = state.players.length>=MAX_PLAYERS?'none':'';
+}
+
+function renderStatus() {
+  if (state.gameOver) return;
+  const p = state.players[state.currentPlayerIdx];
+  if (!p) return;
+  document.getElementById('current-name').textContent = p.name||'?';
+  document.getElementById('current-round').textContent = p.rounds+1;
+  document.getElementById('current-player-idx').textContent = (state.currentPlayerIdx+1)+' / '+state.players.length;
+}
+function render() { renderPlayers(); renderStatus(); }
+
+// ── AUTOCOMPLETE ──────────────────────────────
+function getMatches(q) {
+  const lq = q.toLowerCase();
+  return Object.entries(knownPlayers)
+    .filter(([n])=> n.toLowerCase().includes(lq) && n.toLowerCase()!==lq)
+    .sort((a,b)=>b[1]-a[1]).slice(0,6);
+}
+function showAC(idx) { updateAC(idx, document.getElementById('ni-'+idx).value); }
+function onNameInput(idx,input) { state.players[idx].name=input.value; updateAC(idx,input.value); }
+function onNameBlur(idx) { setTimeout(()=>closeAC(idx),160); saveState(); }
+function onNameKey(e,idx) { if(e.key==='Escape') closeAC(idx); }
+
+function updateAC(idx, val) {
+  const list = document.getElementById('ac-'+idx);
+  const matches = getMatches(val);
+  if (!matches.length) { list.classList.remove('open'); return; }
+  list.innerHTML = matches.map(([name,cnt])=>
+    `<div class="autocomplete-item" onmousedown="pickName(${idx},this.dataset.n)" data-n="${escAttr(name)}">
+      <span>🐷</span><span>${escHtml(name)}</span><span class="ac-cnt">${cnt}×</span>
+    </div>`
+  ).join('');
+  list.classList.add('open');
+}
+
+function pickName(idx, name) {
+  state.players[idx].name = name;
+  const input = document.getElementById('ni-'+idx);
+  if (input) input.value = name;
+  closeAC(idx); saveState();
+}
+function closeAC(idx) {
+  const l = document.getElementById('ac-'+idx);
+  if(l) l.classList.remove('open');
+}
+
+// ── GAME LOGIC ────────────────────────────────
+function applyCombo(idx, btn) {
+  if (state.gameOver) { showToast('Das Spiel ist beendet!'); return; }
+  const combo = COMBOS[idx];
+  const p = state.players[state.currentPlayerIdx];
+  if (!p) return;
+  btn.classList.remove('flash'); void btn.offsetWidth; btn.classList.add('flash');
+  if (combo.pts===null) {
+    p.score=0; showToast(💀 ${p.name}: Schwein auf Schwein! → 0);
+  } else {
+    p.score+=combo.pts;
+    showToast(${combo.icon} ${p.name}: ${combo.pts>0?'+':''}${combo.pts} → ${p.score});
+  }
+  saveState(); render();
+}
+
+function nextPlayer() {
+  if (state.gameOver) return;
+  const p = state.players[state.currentPlayerIdx];
+  if (!p) return;
+  p.rounds++;
+  if (state.players.every(pl=>pl.rounds>=MAX_ROUNDS)) {
+    state.gameOver=true; saveState(); render(); saveMatchToHistory(); showWinner(); return;
+  }
+  let next=(state.currentPlayerIdx+1)%state.players.length, tries=0;
+  while(state.players[next].rounds>=MAX_ROUNDS&&tries<state.players.length){next=(next+1)%state.players.length;tries++;}
+  state.currentPlayerIdx=next; saveState(); render();
+  showToast(➡️ Jetzt: ${state.players[next].name});
+}
+
+function addPlayer() {
+  if(state.players.length>=MAX_PLAYERS) return;
+  state.players.push({name:Spieler ${state.players.length+1},score:0,rounds:0});
+  saveState(); render();
+}
+function removePlayer(idx) {
+  if(state.players.length<=1){showToast('Mindestens 1 Spieler!');return;}
+  state.players.splice(idx,1);
+  if(state.currentPlayerIdx>=state.players.length) state.currentPlayerIdx=state.players.length-1;
+  saveState(); render();
+}
+function resetGame() {
+  document.getElementById('winner-overlay').classList.remove('show');
+  state={players:defaultPlayers(),currentPlayerIdx:0,gameOver:false};
+  saveState(); render(); renderStatus();
+  showToast('🔄 Neues Spiel gestartet!');
+}
+
+// ── MATCH HISTORY ─────────────────────────────
+function saveMatchToHistory() {
+  state.players.forEach(p=>{
+    const n=p.name.trim();
+    if(!n||/^Spieler \d+$/.test(n)) return;
+    knownPlayers[n]=(knownPlayers[n]||0)+1;
+  });
+  saveKnown();
+  matchHistory.unshift({
+    id: Date.now(),
+    date: new Date().toLocaleString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}),
+    players: state.players.map(p=>({name:p.name,score:p.score,rounds:p.rounds}))
+  });
+  if(matchHistory.length>50) matchHistory=matchHistory.slice(0,50);
+  saveHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  if(!matchHistory.length){
+    list.innerHTML=<div class="history-empty"><span class="h-icon">📋</span>Noch keine Spiele beendet.<br>Spiel eine Runde um den Verlauf zu sehen!</div>;
+    return;
+  }
+  list.innerHTML = matchHistory.map((m,i)=>{
+    const sorted=[...m.players].sort((a,b)=>b.score-a.score);
+    const winner=sorted[0];
+    const names=m.players.map(p=>escHtml(p.name)).join(' · ');
+    const matchNo = matchHistory.length-i;
+    return `<div class="match-card" id="mc-${m.id}">
+      <div class="match-header" onclick="toggleMatch('${m.id}')">
+        <div class="match-meta">
+          <span class="match-num">#${matchNo}</span>
+          <div>
+            <div class="match-winner-badge">🏆 ${escHtml(winner.name)} · ${winner.score} Pkt</div>
+            <div class="match-players-preview">${names}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
+          <span class="match-date">${m.date}</span>
+          <span class="match-toggle">▾</span>
+        </div>
+      </div>
+      <div class="match-body">
+        <div class="match-ranking">
+          ${sorted.map((p,ri)=>`
+            <div class="match-rank-row">
+              <span class="match-rank-pos">${['🥇','🥈','🥉'][ri]||(ri+1)+'.'}</span>
+              <span class="match-rank-name">${escHtml(p.name)}</span>
+              <span class="match-rank-rounds">${p.rounds} Rd.</span>
+              <span class="match-rank-pts">${p.score}</span>
+            </div>`).join('')}
+        </div>
+        <button class="delete-match-btn" onclick="deleteMatch('${m.id}')">🗑 Match löschen</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleMatch(id) { document.getElementById('mc-'+id)?.classList.toggle('open'); }
+function deleteMatch(id) {
+  matchHistory=matchHistory.filter(m=>String(m.id)!==String(id));
+  saveHistory(); renderHistory(); showToast('Match gelöscht');
+}
+function clearHistory() {
+  if(!confirm('Kompletten Verlauf löschen?')) return;
+  matchHistory=[]; saveHistory(); renderHistory(); showToast('Verlauf gelöscht');
+}
+
+// ── KNOWN PLAYERS ─────────────────────────────
+function renderKnownPlayers() {
+  const c = document.getElementById('known-chips');
+  const names = Object.entries(knownPlayers).sort((a,b)=>b[1]-a[1]);
+  if(!names.length){
+    c.innerHTML=<span style="color:var(--text-muted);font-size:13px;line-height:1.6">Noch keine gespeicherten Spieler.<br>Namen werden automatisch gespeichert wenn ein Spiel endet.</span>;
+    return;
+  }
+  c.innerHTML = names.map(([name,cnt])=>`
+    <div class="known-chip">
+      <span onclick="addKnownToGame('${escAttr(name)}')" style="display:flex;align-items:center;gap:6px">
+        🐷 ${escHtml(name)} <span class="chip-cnt">${cnt}×</span>
+      </span>
+      <span class="chip-x" onclick="removeKnown('${escAttr(name)}')" title="Vergessen">✕</span>
+    </div>`
+  ).join('');
+}
+
+function addKnownToGame(name) {
+  if(state.players.length>=MAX_PLAYERS){showToast('Maximal 8 Spieler!');return;}
+  if(state.players.some(p=>p.name===name)){showToast(${name} ist bereits dabei!);return;}
+  state.players.push({name,score:0,rounds:0});
+  saveState(); render();
+  switchTab('game',document.querySelectorAll('.tab-btn')[0]);
+  showToast(✅ ${name} hinzugefügt!);
+}
+function removeKnown(name) {
+  delete knownPlayers[name]; saveKnown(); renderKnownPlayers();
+  showToast(${name} vergessen);
+}
+
+// ── WINNER ────────────────────────────────────
+function showWinner() {
+  const sorted=[...state.players].sort((a,b)=>b.score-a.score);
+  const winner=sorted[0];
+  document.getElementById('winner-name').textContent=winner.name;
+  document.getElementById('winner-pts').textContent=winner.score;
+  document.getElementById('winner-ranking').innerHTML=sorted.map((p,i)=>`
+    <div class="rank-item">
+      <span class="rank-pos">${['🥇','🥈','🥉'][i]||(i+1)+'.'}</span>
+      <span class="rank-name">${escHtml(p.name)}</span>
+      <span class="rank-pts">${p.score}</span>
+    </div>`).join('');
+  document.getElementById('winner-overlay').classList.add('show');
+  launchConfetti();
+}
+
+function launchConfetti() {
+  const cols=['#e85d2f','#f0a500','#4caf72','#5b9cf6','#ff6b9d','#a78bfa'];
+  for(let i=0;i<60;i++){
+    const el=document.createElement('div');
+    el.className='confetti-piece';
+    el.style.cssText=left:${Math.random()*100}vw;background:${cols[Math.floor(Math.random()*cols.length)]};width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*.8}s;;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),4000);
+  }
+}
+
+// ── CSV ───────────────────────────────────────
+function exportCSV() {
+  const rows=state.players.map(p=>"${p.name.replace(/"/g,'""')}",${p.score},${p.rounds}).join('\n');
+  const blob=new Blob(['\uFEFFName,Punkte,Runden\n'+rows],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='schweinerei.csv'; a.click();
+  URL.revokeObjectURL(url); showToast('📄 CSV exportiert!');
+}
+
+// ── UTILS ─────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),2600);
+}
+function escHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escAttr(s){ return String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.name-wrap'))
+    document.querySelectorAll('.autocomplete-list').forEach(l=>l.classList.remove('open'));
+});
+
+// ── BOOT ──────────────────────────────────────
+loadAll(); renderCombos(); render();
+if(state.gameOver) showWinner();
+</script>
+</body>
+</html>
